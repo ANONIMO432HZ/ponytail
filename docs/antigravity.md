@@ -15,10 +15,17 @@ lifecycle hook into Antigravity's customization directory (`~/.gemini/config` gl
 ## Install and uninstall
 
 ```bash
-git clone https://github.com/DietrichGebert/ponytail
-node ponytail/scripts/antigravity.js install            # ~/.gemini/config, every project
-node ponytail/scripts/antigravity.js install --project  # <cwd>/.agents, this project only
-node ponytail/scripts/antigravity.js uninstall          # add --project for project scope
+# Con agy (global para CLI e IDE):
+agy plugin install https://github.com/ANONIMO432HZ/ponytail
+
+# Con npx (directo desde GitHub sin clonar el repo):
+npx github:ANONIMO432HZ/ponytail install            # ~/.gemini/config, every project
+npx github:ANONIMO432HZ/ponytail install --project  # <cwd>/.agents, this project only
+
+# En local (desde checkout o vía npm link):
+npx C:\LABORATORIO\ponytail install --project
+node scripts/antigravity.js install [--project]
+node scripts/antigravity.js uninstall [--project]
 ```
 
 What the install script does:

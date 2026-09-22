@@ -191,22 +191,32 @@ Carga el ruleset como contexto permanente en cada sesión y registra los comando
 
 ### Antigravity CLI
 
-Google está renombrando Gemini CLI a Antigravity CLI (el binario `agy`); la misma extensión se instala ahí:
+Google está renombrando Gemini CLI a Antigravity CLI (el binario `agy`); el plugin se instala directamente desde GitHub:
 
 ```bash
-agy plugin install https://github.com/DietrichGebert/ponytail
+agy plugin install https://github.com/ANONIMO432HZ/ponytail
 ```
 
 Reutiliza el `gemini-extension.json` de este repo. Una diferencia: Antigravity convierte los comandos `/ponytail` en skills, así que los escribes en el chat (por ejemplo `/ponytail-review` como mensaje) en vez de seleccionarlos de un menú slash. Hasta que la migración se complete (alrededor del 18 de junio de 2026), `gemini extensions install` también funciona. Para usarlo como regla permanente, coloca el ruleset en `.agents/rules/`.
 
 ### Antigravity IDE
 
+Instala la regla permanente de ponytail (`rules/ponytail.md`), los seis skills nativos (`skills/`) y el hook `PreInvocation` (`hooks.json`) en la raíz de personalizaciones de Antigravity IDE:
+
 ```bash
-node ponytail/scripts/antigravity.js install            # ~/.gemini/config, cada proyecto
-node ponytail/scripts/antigravity.js install --project  # <cwd>/.agents, solo este proyecto
+# Con agy (global para CLI e IDE):
+agy plugin install https://github.com/ANONIMO432HZ/ponytail
+
+# Con npx (directo desde GitHub sin clonar):
+npx github:ANONIMO432HZ/ponytail install            # global en ~/.gemini/config
+npx github:ANONIMO432HZ/ponytail install --project  # por proyecto en <cwd>/.agents
+
+# En local (desde checkout o vía npm link):
+npx C:\LABORATORIO\ponytail install --project
+node scripts/antigravity.js install [--project]
 ```
 
-Instala la regla permanente de ponytail (`rules/ponytail.md`), los seis skills nativos (`skills/`) y el hook `PreInvocation` (`hooks.json`) en la raíz de personalizaciones de Antigravity IDE (`~/.gemini/config` globalmente o `<cwd>/.agents` por proyecto). Antigravity IDE carga la regla en cada turno, habilita los 6 skills directamente en el chat y usa `PreInvocation` para rastrear cambios de nivel de `/ponytail`. Contrato y detalles: [docs/antigravity.md](docs/antigravity.md). Desinstalar: `node ponytail/scripts/antigravity.js uninstall` (o `node scripts/uninstall.js`).
+Antigravity IDE carga la regla en cada turno, habilita los 6 skills directamente en el chat y usa `PreInvocation` para rastrear cambios de nivel de `/ponytail`. Contrato y detalles: [docs/antigravity.md](docs/antigravity.md). Desinstalar: `node scripts/antigravity.js uninstall [--project]` (o `node scripts/uninstall.js`).
 
 
 ### CodeWhale

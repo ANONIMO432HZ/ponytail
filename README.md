@@ -212,22 +212,32 @@ For full plugin-tier support (automatic mode activation + ruleset injection on e
 
 ### Antigravity CLI
 
-Google is renaming Gemini CLI to Antigravity CLI (the `agy` binary); the same extension installs there:
+Google is renaming Gemini CLI to Antigravity CLI (the `agy` binary); the plugin installs directly from GitHub:
 
 ```bash
-agy plugin install https://github.com/DietrichGebert/ponytail
+agy plugin install https://github.com/ANONIMO432HZ/ponytail
 ```
 
 It reuses this repo's `gemini-extension.json`. One difference: Antigravity converts the `/ponytail` commands into skills, so you type them into the chat (e.g. `/ponytail-review` as a message) instead of picking them from a slash menu. Until the migration completes (around June 18, 2026), `gemini extensions install` still works too. To run it as an always-on rule instead, drop the ruleset into `.agents/rules/`.
 
 ### Antigravity IDE
 
+Installs ponytail's always-on rule (`rules/ponytail.md`), the six native skills (`skills/`), and the `PreInvocation` hook (`hooks.json`) into Antigravity IDE:
+
 ```bash
-node ponytail/scripts/antigravity.js install            # ~/.gemini/config, every project
-node ponytail/scripts/antigravity.js install --project  # <cwd>/.agents, this project only
+# Con agy (global para CLI e IDE):
+agy plugin install https://github.com/ANONIMO432HZ/ponytail
+
+# Con npx (directo desde GitHub sin clonar):
+npx github:ANONIMO432HZ/ponytail install            # global en ~/.gemini/config
+npx github:ANONIMO432HZ/ponytail install --project  # por proyecto en <cwd>/.agents
+
+# En local (desde checkout o vía npm link):
+npx C:\LABORATORIO\ponytail install --project
+node scripts/antigravity.js install [--project]
 ```
 
-Installs ponytail's always-on rule (`rules/ponytail.md`), the six native skills (`skills/`), and the `PreInvocation` hook (`hooks.json`) into Antigravity IDE's customization root (`~/.gemini/config` globally or `<cwd>/.agents` per-project). Antigravity IDE auto-loads the rule every turn, makes the 6 skills available directly in chat, and uses `PreInvocation` to track `/ponytail` level changes. Full details and contract: [docs/antigravity.md](docs/antigravity.md). Uninstall: `node ponytail/scripts/antigravity.js uninstall` (or `node scripts/uninstall.js`).
+Antigravity IDE auto-loads the rule every turn, makes the 6 skills available directly in chat, and uses `PreInvocation` to track `/ponytail` level changes. Full details and contract: [docs/antigravity.md](docs/antigravity.md). Uninstall: `node scripts/antigravity.js uninstall [--project]` (or `node scripts/uninstall.js`).
 
 
 ### Hermes Agent
