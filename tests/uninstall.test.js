@@ -55,6 +55,22 @@ fs.writeFileSync(cursorHooksPath, JSON.stringify({
   },
 }));
 
+// Antigravity IDE: the mode flag, rules, skills, and hooks entry go too.
+const geminiDir = path.join(home, '.gemini');
+const geminiConfigDir = path.join(geminiDir, 'config');
+fs.mkdirSync(geminiConfigDir, { recursive: true });
+const geminiFlagPath = path.join(geminiDir, '.ponytail-active');
+fs.writeFileSync(geminiFlagPath, 'ultra');
+const geminiHooksPath = path.join(geminiConfigDir, 'hooks.json');
+fs.writeFileSync(geminiHooksPath, JSON.stringify({
+  ponytail: {
+    PreInvocation: [{ command: 'node "/p/ponytail/hooks/ponytail-mode-tracker.js"', timeout: 5 }],
+  },
+  'user-hook': {
+    PreInvocation: [{ command: './user-hook.sh' }],
+  },
+}));
+
 const env = {
   HOME: home,
   USERPROFILE: home,
@@ -66,10 +82,16 @@ assert.equal(result.status, 0, result.stderr);
 assert.equal(fs.existsSync(flagPath), false, 'mode flag must be removed');
 assert.equal(fs.existsSync(configPath), false, 'config file must be removed');
 assert.equal(fs.existsSync(cursorFlagPath), false, 'Cursor mode flag must be removed');
+assert.equal(fs.existsSync(geminiFlagPath), false, 'Antigravity mode flag must be removed');
 assert.deepEqual(
   JSON.parse(fs.readFileSync(cursorHooksPath, 'utf8')),
   { version: 1, hooks: { sessionStart: [{ command: './hooks/mine.sh' }] } },
   "only ponytail's entries may leave ~/.cursor/hooks.json",
+);
+assert.deepEqual(
+  JSON.parse(fs.readFileSync(geminiHooksPath, 'utf8')),
+  { 'user-hook': { PreInvocation: [{ command: './user-hook.sh' }] } },
+  "only ponytail's entries may leave Antigravity hooks.json",
 );
 
 const settingsAfter = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));

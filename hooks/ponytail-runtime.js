@@ -27,6 +27,8 @@ const isQoder = !isCopilot && !isCodex && Boolean(process.env.QODER_SESSION_ID);
 // hooks next to CLAUDE_PLUGIN_ROOT, and it needs Cursor-shaped JSON either
 // way, so this check comes after the hosts with their own data dirs.
 const isCursor = !isCopilot && !isCodex && !isQoder && Boolean(process.env.CURSOR_VERSION);
+const isAntigravity = !isCopilot && !isCodex && !isQoder && !isCursor &&
+  Boolean(process.env.ANTIGRAVITY_AGENT || process.env.ANTIGRAVITY_CONVERSATION_ID);
 
 let stateDir = getClaudeDir();
 if (isCodex) stateDir = process.env.PLUGIN_DATA;
@@ -35,6 +37,7 @@ if (isCodex) stateDir = process.env.PLUGIN_DATA;
 if (isCopilot) stateDir = process.env.COPILOT_PLUGIN_DATA || getClaudeDir();
 if (isQoder) stateDir = path.join(os.homedir(), '.qoder');
 if (isCursor) stateDir = path.join(os.homedir(), '.cursor');
+if (isAntigravity) stateDir = path.join(os.homedir(), '.gemini');
 
 const statePath = path.join(stateDir, STATE_FILE);
 
@@ -120,6 +123,21 @@ function writeHookOutput(event, mode, context = '') {
     process.stdout.write(JSON.stringify(output));
     return;
   }
+  if (isAntigravity) {
+    // Antigravity IDE: PreInvocation expects JSON on stdout with injectSteps.
+    // Empty output should be {} rather than raw text or empty stdout.
+    if (!context) {
+      process.stdout.write(JSON.stringify({}));
+      return;
+    }
+    const output = {
+      injectSteps: [
+        { ephemeralMessage: context },
+      ],
+    };
+    process.stdout.write(JSON.stringify(output));
+    return;
+  }
   // Native Claude: SessionStart accepts raw stdout, but SubagentStart needs the
   // hookSpecificOutput JSON form or the context is dropped.
   if (event === 'SubagentStart') {
@@ -134,6 +152,7 @@ module.exports = {
   clearMode,
   cursorRuleNotice,
   cursorRulePath,
+  isAntigravity,
   isCodex,
   isCopilot,
   isCursor,

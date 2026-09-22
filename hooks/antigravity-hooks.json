@@ -1,0 +1,11 @@
+{
+  "ponytail": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node \"PONYTAIL_DIR/hooks/ponytail-mode-tracker.js\"",
+        "timeout": 5
+      }
+    ]
+  }
+}

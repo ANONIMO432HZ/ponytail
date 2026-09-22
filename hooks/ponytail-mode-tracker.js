@@ -2,11 +2,13 @@
 // ponytail — UserPromptSubmit hook to track which ponytail mode is active
 // Inspects user input for /ponytail commands and writes mode to flag file
 
+const fs = require('fs');
 const { getDefaultMode, isDeactivationCommand, writeDefaultMode } = require('./ponytail-config');
 const {
   clearMode,
   cursorRuleNotice,
   cursorRulePath,
+  isAntigravity,
   isCursor,
   isQoder,
   readMode,
@@ -21,10 +23,34 @@ let done = false;
 function finish() {
   if (done) return;
   done = true;
+  let outputWritten = false;
+  const originalWriteHookOutput = writeHookOutput;
+  const emitOutput = (event, mode, context) => {
+    outputWritten = true;
+    originalWriteHookOutput(event, mode, context);
+  };
+
   try {
     // Strip UTF-8 BOM some shells prepend when piping (breaks JSON.parse)
     const data = JSON.parse(input.replace(/^\uFEFF/, ''));
-    const prompt = (data.prompt || '').trim().toLowerCase();
+    let prompt = (data.prompt || '').trim();
+    if (!prompt && data.transcriptPath && fs.existsSync(data.transcriptPath)) {
+      try {
+        const lines = fs.readFileSync(data.transcriptPath, 'utf8').trim().split('\n');
+        for (let i = lines.length - 1; i >= 0; i--) {
+          if (!lines[i].includes('"USER_INPUT"')) continue;
+          const entry = JSON.parse(lines[i]);
+          if (entry.type === 'USER_INPUT' && entry.content) {
+            const m = entry.content.match(/<USER_REQUEST>([\s\S]*?)<\/USER_REQUEST>/);
+            prompt = (m ? m[1] : entry.content).trim();
+            break;
+          }
+        }
+      } catch (e) {
+        // silent fail
+      }
+    }
+    prompt = prompt.toLowerCase();
 
     // Cursor with the always-on rule in the workspace: no hook can change or
     // switch off a rule, so answer the command with the notice instead of
@@ -33,7 +59,7 @@ function finish() {
     if (isCursor && (/^[/@$]ponytail/.test(prompt) || isDeactivationCommand(prompt))) {
       const rule = cursorRulePath();
       if (rule) {
-        writeHookOutput('UserPromptSubmit', readMode() || 'off', cursorRuleNotice(rule));
+        emitOutput('UserPromptSubmit', readMode() || 'off', cursorRuleNotice(rule));
         return;
       }
     }
@@ -60,7 +86,7 @@ function finish() {
           const dmode = parts[2];
           if (dmode === 'off' || dmode === 'lite' || dmode === 'full' || dmode === 'ultra') {
             writeDefaultMode(dmode);
-            writeHookOutput('UserPromptSubmit', dmode, 'PONYTAIL DEFAULT SET — new sessions start in ' + dmode + '.');
+            emitOutput('UserPromptSubmit', dmode, 'PONYTAIL DEFAULT SET — new sessions start in ' + dmode + '.');
           }
           return; // don't fall through to the session-mode switch
         }
@@ -77,7 +103,7 @@ function finish() {
       }
 
       if (isReportOnly) {
-        writeHookOutput(
+        emitOutput(
           'UserPromptSubmit',
           mode,
           'PONYTAIL MODE ACTIVE — level: ' + mode,
@@ -93,7 +119,7 @@ function finish() {
           // for the new level, so the tracker delivers that level's ruleset
           // along with the confirmation (#817).
           const header = 'PONYTAIL MODE CHANGED — level: ' + mode;
-          writeHookOutput(
+          emitOutput(
             'UserPromptSubmit',
             mode,
             isCursor ? header + '\n\n' + getPonytailInstructions(mode) : header,
@@ -102,7 +128,7 @@ function finish() {
       } else if (mode === 'off') {
         clearMode();
         deactivated = true;
-        writeHookOutput('UserPromptSubmit', 'off', 'PONYTAIL MODE OFF');
+        emitOutput('UserPromptSubmit', 'off', 'PONYTAIL MODE OFF');
       }
     }
 
@@ -110,7 +136,7 @@ function finish() {
     if (!modeSwitched && !deactivated && isDeactivationCommand(prompt)) {
       clearMode();
       deactivated = true;
-      writeHookOutput('UserPromptSubmit', 'off', 'PONYTAIL MODE OFF');
+      emitOutput('UserPromptSubmit', 'off', 'PONYTAIL MODE OFF');
     }
 
     // Qoder has no SessionStart event, so UserPromptSubmit does double duty:
@@ -133,11 +159,17 @@ function finish() {
         const header = modeSwitched
           ? 'PONYTAIL MODE CHANGED — level: ' + currentMode + '\n\n'
           : '';
-        writeHookOutput('UserPromptSubmit', currentMode, header + getPonytailInstructions(currentMode));
+        emitOutput('UserPromptSubmit', currentMode, header + getPonytailInstructions(currentMode));
       }
     }
+
+    if (isAntigravity && !outputWritten) {
+      emitOutput('UserPromptSubmit', '', '');
+    }
   } catch (e) {
-    // Silent fail
+    if (isAntigravity && !outputWritten) {
+      try { emitOutput('UserPromptSubmit', '', ''); } catch (_) {}
+    }
   }
 }
 

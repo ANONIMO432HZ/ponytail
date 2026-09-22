@@ -9,15 +9,17 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 
-test('npm package ships the advertised cleanup script', () => {
+test('npm package ships the advertised cleanup and adapter scripts', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-  assert.ok(
-    pkg.files.includes('scripts/uninstall.js'),
-    'package.json "files" must include scripts/uninstall.js (README tells users to run it)',
-  );
-  // And the file it points at must exist.
-  assert.ok(
-    fs.existsSync(path.join(root, 'scripts', 'uninstall.js')),
-    'scripts/uninstall.js is listed in files but missing on disk',
-  );
+  for (const script of ['scripts/uninstall.js', 'scripts/cursor-hooks.js', 'scripts/antigravity.js']) {
+    assert.ok(
+      pkg.files.includes(script),
+      `package.json "files" must include ${script}`,
+    );
+    assert.ok(
+      fs.existsSync(path.join(root, script)),
+      `${script} is listed in files but missing on disk`,
+    );
+  }
 });
+

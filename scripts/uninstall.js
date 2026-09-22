@@ -10,6 +10,7 @@ const os = require('os');
 const path = require('path');
 const { getConfigPath, getClaudeDir } = require('../hooks/ponytail-config');
 const cursorHooks = require('./cursor-hooks');
+const antigravity = require('./antigravity');
 
 const STATUSLINE_SCRIPT = 'ponytail-statusline';
 
@@ -24,6 +25,7 @@ function removeIfExists(filePath, label) {
 
 removeIfExists(path.join(getClaudeDir(), '.ponytail-active'), 'mode flag');
 removeIfExists(path.join(os.homedir(), '.cursor', '.ponytail-active'), 'Cursor mode flag');
+removeIfExists(path.join(os.homedir(), '.gemini', '.ponytail-active'), 'Antigravity mode flag');
 removeIfExists(getConfigPath(), 'config file');
 
 // Cursor hooks (#817): drop only ponytail's entries from ~/.cursor/hooks.json,
@@ -35,6 +37,18 @@ try {
   if (e instanceof SyntaxError) {
     // ponytail: malformed hooks.json — can't safely edit it; leave intact, warn
     console.warn(`~/.cursor/hooks.json is malformed — could not remove the ponytail hook entries. Remove them manually from: ${cursorHooks.hooksPath('user')} (${e.message})`);
+  } else {
+    throw e;
+  }
+}
+
+// Antigravity IDE: drop ponytail rules, skills, and hooks from ~/.gemini/config
+try {
+  const agFile = antigravity.uninstall('user');
+  if (agFile) console.log(`Removed ponytail Antigravity customizations from ${agFile}`);
+} catch (e) {
+  if (e instanceof SyntaxError) {
+    console.warn(`Antigravity hooks.json is malformed — could not remove the ponytail entries. Remove them manually from: ${antigravity.hooksPath('user')} (${e.message})`);
   } else {
     throw e;
   }

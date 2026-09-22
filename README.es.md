@@ -199,6 +199,16 @@ agy plugin install https://github.com/DietrichGebert/ponytail
 
 Reutiliza el `gemini-extension.json` de este repo. Una diferencia: Antigravity convierte los comandos `/ponytail` en skills, así que los escribes en el chat (por ejemplo `/ponytail-review` como mensaje) en vez de seleccionarlos de un menú slash. Hasta que la migración se complete (alrededor del 18 de junio de 2026), `gemini extensions install` también funciona. Para usarlo como regla permanente, coloca el ruleset en `.agents/rules/`.
 
+### Antigravity IDE
+
+```bash
+node ponytail/scripts/antigravity.js install            # ~/.gemini/config, cada proyecto
+node ponytail/scripts/antigravity.js install --project  # <cwd>/.agents, solo este proyecto
+```
+
+Instala la regla permanente de ponytail (`rules/ponytail.md`), los seis skills nativos (`skills/`) y el hook `PreInvocation` (`hooks.json`) en la raíz de personalizaciones de Antigravity IDE (`~/.gemini/config` globalmente o `<cwd>/.agents` por proyecto). Antigravity IDE carga la regla en cada turno, habilita los 6 skills directamente en el chat y usa `PreInvocation` para rastrear cambios de nivel de `/ponytail`. Contrato y detalles: [docs/antigravity.md](docs/antigravity.md). Desinstalar: `node ponytail/scripts/antigravity.js uninstall` (o `node scripts/uninstall.js`).
+
+
 ### CodeWhale
 
 Lee `AGENTS.md` desde la raíz del proyecto, sin configuración. Copia [`AGENTS.md`](AGENTS.md) a tu proyecto, o ejecuta `codewhale` desde un checkout de este repo. Eso es todo.
@@ -271,7 +281,7 @@ Qué archivos corresponden a qué agente: [Portabilidad de agentes](docs/agent-p
 | `/ponytail-debt` | Recolecta los atajos marcados con `ponytail:` que dejaste pendientes en un registro, para que "después" no se convierta en "nunca". |
 | `/ponytail-help` | Referencia rápida de los comandos anteriores. |
 
-Los comandos requieren un host compatible con skills (Claude Code, Codex, Devin CLI, OpenCode, Gemini, pi, Swival). En Codex son skills; se invocan con `@` (`@ponytail-review`). Cursor con los [hooks](#cursor) solo tiene el cambio de nivel con `/ponytail`, escrito como mensaje normal. Los adaptadores de solo instrucciones (la regla de Cursor, Windsurf, Cline, Copilot, Kiro, Antigravity) cargan el ruleset permanente sin los comandos.
+Los comandos requieren un host compatible con skills (Claude Code, Codex, Devin CLI, OpenCode, Gemini, pi, Swival, Antigravity IDE). En Codex son skills; se invocan con `@` (`@ponytail-review`). Cursor con los [hooks](#cursor) solo tiene el cambio de nivel con `/ponytail`, escrito como mensaje normal. Los adaptadores de solo instrucciones (la regla de Cursor, Windsurf, Cline, Copilot, Kiro) cargan el ruleset permanente sin los comandos.
 
 ## Desarrollo
 

@@ -220,6 +220,16 @@ agy plugin install https://github.com/DietrichGebert/ponytail
 
 It reuses this repo's `gemini-extension.json`. One difference: Antigravity converts the `/ponytail` commands into skills, so you type them into the chat (e.g. `/ponytail-review` as a message) instead of picking them from a slash menu. Until the migration completes (around June 18, 2026), `gemini extensions install` still works too. To run it as an always-on rule instead, drop the ruleset into `.agents/rules/`.
 
+### Antigravity IDE
+
+```bash
+node ponytail/scripts/antigravity.js install            # ~/.gemini/config, every project
+node ponytail/scripts/antigravity.js install --project  # <cwd>/.agents, this project only
+```
+
+Installs ponytail's always-on rule (`rules/ponytail.md`), the six native skills (`skills/`), and the `PreInvocation` hook (`hooks.json`) into Antigravity IDE's customization root (`~/.gemini/config` globally or `<cwd>/.agents` per-project). Antigravity IDE auto-loads the rule every turn, makes the 6 skills available directly in chat, and uses `PreInvocation` to track `/ponytail` level changes. Full details and contract: [docs/antigravity.md](docs/antigravity.md). Uninstall: `node ponytail/scripts/antigravity.js uninstall` (or `node scripts/uninstall.js`).
+
+
 ### Hermes Agent
 
 ```bash
@@ -322,9 +332,10 @@ Which files map to which agent: [Agent portability](docs/agent-portability.md).
 | Grok Build | `grok plugin uninstall ponytail` |
 | Pi agent | `pi uninstall ponytail` |
 | Cursor hooks | `node scripts/cursor-hooks.js uninstall` (add `--project` for a project-level install); removes only ponytail's entries from `hooks.json` |
+| Antigravity IDE | `node scripts/antigravity.js uninstall` (add `--project` for a project-level install); removes ponytail rules, skills, and hooks |
 | Cursor rule / Windsurf / Cline / Qoder / etc. | Delete the copied rule file |
 
-These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag (`~/.claude/.ponytail-active`, or `~/.cursor/.ponytail-active` for Cursor), `~/.config/ponytail/config.json`, ponytail's entries in `~/.cursor/hooks.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `node scripts/uninstall.js` to clean those up too. **Run it before the host remove command above** — the script is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own script, so a statusline you set up yourself is left untouched.
+These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag (`~/.claude/.ponytail-active`, `~/.cursor/.ponytail-active`, or `~/.gemini/.ponytail-active`), `~/.config/ponytail/config.json`, ponytail's entries in `~/.cursor/hooks.json` / `~/.gemini/config/hooks.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `node scripts/uninstall.js` to clean those up too. **Run it before the host remove command above** — the script is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own script, so a statusline you set up yourself is left untouched.
 
 ## Commands
 
@@ -337,7 +348,7 @@ These remove the plugin's own files. They leave behind a small amount of state p
 | `/ponytail-gain` | Show the measured impact scoreboard (less code, less cost, more speed) from the benchmark. |
 | `/ponytail-help` | Quick reference for the commands above. |
 
-Commands need a skill-capable host (Claude Code, Codex, Devin CLI, OpenCode, Gemini, pi, Swival, Hermes Agent, Qoder, Grok Build). In Codex they're skills, invoke with `@` (`@ponytail-review`). Cursor with the [hooks](#cursor) gets `/ponytail` level switching only, typed as a plain message. The instruction-only adapters (Cursor's rule file, Windsurf, Cline, Copilot, Kiro, Antigravity) load the always-on ruleset without the commands.
+Commands need a skill-capable host (Claude Code, Codex, Devin CLI, OpenCode, Gemini, pi, Swival, Hermes Agent, Qoder, Grok Build, Antigravity IDE). In Codex they're skills, invoke with `@` (`@ponytail-review`). Cursor with the [hooks](#cursor) gets `/ponytail` level switching only, typed as a plain message. The instruction-only adapters (Cursor's rule file, Windsurf, Cline, Copilot, Kiro) load the always-on ruleset without the commands.
 
 ## Development
 
