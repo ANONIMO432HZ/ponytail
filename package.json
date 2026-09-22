@@ -16,6 +16,9 @@
   "bugs": {
     "url": "https://github.com/DietrichGebert/ponytail/issues"
   },
+  "bin": {
+    "ponytail": "./scripts/antigravity.js"
+  },
   "main": "./.opencode/plugins/ponytail.mjs",
   "exports": {
     ".": "./.opencode/plugins/ponytail.mjs",
